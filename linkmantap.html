@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkMantap - File Sharing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000814;
+            color: #ffffff;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .brand {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #00b4d8;
+        }
+        .navbar {
+            background-color: #001d3d;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar a {
+            color: #00b4d8;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+        .navbar a:hover {
+            color: #90e0ef;
+        }
+        .section {
+            margin-top: 30px;
+        }
+        .upload-section, .download-section, .ads-section {
+            padding: 20px;
+            border: 1px solid #00b4d8;
+            border-radius: 10px;
+            background: #001d3d;
+            box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.6);
+            margin-bottom: 30px;
+        }
+        .btn-primary {
+            background-color: #00b4d8;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #90e0ef;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #90e0ef;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #00b4d8;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #002a5c;
+        }
+        .file-item a {
+            color: #00b4d8;
+        }
+        .file-item a:hover {
+            color: #90e0ef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <nav class="navbar">
+            <div class="brand">LinkMantap</div>
+            <div>
+                <a href="#">Home</a>
+                <a href="#upload">Upload</a>
+                <a href="#download">Download</a>
+            </div>
+        </nav>
+
+        <div id="upload" class="section upload-section">
+            <h3 class="mb-4">Upload Your File</h3>
+            <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <input type="file" class="form-control" id="fileInput" name="file" multiple required>
+                </div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+            <div id="uploadResult" class="mt-4"></div>
+        </div>
+
+        <div id="download" class="section download-section">
+            <h3 class="mb-4">Download Files</h3>
+            <div id="fileList">
+                <!-- Dynamic list of files will be loaded here -->
+            </div>
+        </div>
+
+        <div class="ads-section text-center">
+            <h5 class="mb-3">Sponsored Ads</h5>
+            <div style="border: 1px dashed #90e0ef; padding: 20px; color: #90e0ef;">
+                Your Ad Here
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2024 LinkMantap. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const uploadResult = document.getElementById('uploadResult');
+        const fileList = document.getElementById('fileList');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    uploadResult.innerHTML = `<div class="alert alert-success">Files uploaded successfully!</div>`;
+                    loadFiles();
+                } else {
+                    throw new Error('Upload failed.');
+                }
+            } catch (error) {
+                uploadResult.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        });
+
+        async function loadFiles() {
+            try {
+                const response = await fetch('/files');
+                if (response.ok) {
+                    const files = await response.json();
+                    fileList.innerHTML = files.map(file => `
+                        <div class="file-item">
+                            <span>${file.name}</span>
+                            <a href="${file.link}" download>Download</a>
+                        </div>
+                    `).join('');
+                } else {
+                    throw new Error('Failed to load files.');
+                }
+            } catch (error) {
+                fileList.innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+            }
+        }
+
+        // Initial load of files
+        loadFiles();
+    </script>
+</body>
+</html>
